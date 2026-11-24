@@ -1,28 +1,39 @@
 import "./style.css";
+import { verificarSaude } from "./api.js";
+import { telaDoadores } from "./pages/doadores.js";
 
 const app = document.querySelector("#app");
+const statusApi = document.querySelector("#status-api");
 
-app.innerHTML = `
-  <h1>Mesa para Todos</h1>
-  <p>Sistema de Gestão de Doações</p>
-  <p>Status da API: <strong id="status">verificando...</strong></p>
-`;
+const rotas = {
+  "#/doadores": telaDoadores,
+};
 
-async function verificarApi() {
-  const status = document.querySelector("#status");
+async function navegar() {
+  const caminho = location.hash || "#/doadores";
+  const tela = rotas[caminho] ?? telaDoadores;
 
   try {
-    const resposta = await fetch("/api/health");
-
-    if (!resposta.ok) {
-      throw new Error("Falha ao consultar a API");
-    }
-
-    const dados = await resposta.json();
-    status.textContent = `${dados.status} (${dados.hora})`;
-  } catch {
-    status.textContent = "API fora do ar";
+    await tela(app);
+  } catch (erro) {
+    console.error(erro);
+    app.textContent = "Não foi possível abrir a tela. Atualize a página.";
   }
 }
 
-void verificarApi();
+async function atualizarStatus() {
+  try {
+    const dados = await verificarSaude();
+
+    statusApi.textContent = `${dados.status}, banco: ${dados.banco} (${dados.hora})`;
+  } catch {
+    statusApi.textContent = "API fora do ar";
+  }
+}
+
+window.addEventListener("hashchange", () => {
+  void navegar();
+});
+
+void navegar();
+void atualizarStatus();
