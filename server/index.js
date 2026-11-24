@@ -2,6 +2,8 @@ import "dotenv/config";
 import express from "express";
 import db from "./db.js";
 import doadores from "./routes/doadores.js";
+import itens from "./routes/itens.js";
+import doacoes from "./routes/doacoes.js";
 
 const app = express();
 app.use(express.json());
@@ -25,6 +27,8 @@ app.get("/api/health", async (req, res) => {
 });
 
 app.use("/api/doadores", doadores);
+app.use("/api/itens", itens);
+app.use("/api/doacoes", doacoes);
 
 app.use((erro, req, res, _next) => {
   if (erro.type === "entity.parse.failed") {

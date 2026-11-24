@@ -35,3 +35,40 @@ export function validarDoador(dados = {}) {
 
   return null;
 }
+
+export function validarDoacao(dados = {}) {
+  const idDoador = dados.id_doador;
+  const tipo = dados.tipo;
+  const quantidade = dados.quantidade;
+  const dataDoacao = dados.data_doacao;
+
+  if (!Number.isSafeInteger(idDoador) || idDoador < 1) {
+    return "id_doador deve ser um número inteiro positivo";
+  }
+
+  if (tipo !== "cesta_alimentos" && tipo !== "kit_higiene") {
+    return "Selecione cesta de alimentos ou kit de higiene";
+  }
+
+  if (!Number.isSafeInteger(quantidade) || quantidade < 1) {
+    return "Quantidade deve ser um número inteiro maior que zero";
+  }
+
+  if (typeof dataDoacao !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(dataDoacao)) {
+    return "Data da doação deve estar no formato AAAA-MM-DD";
+  }
+
+  const observacao = dados.observacao;
+
+  if (observacao !== undefined && observacao !== null) {
+    if (typeof observacao !== "string") {
+      return "Observação deve ser um texto";
+    }
+
+    if (observacao.length > 255) {
+      return "Observação deve ter no máximo 255 caracteres";
+    }
+  }
+
+  return null;
+}
