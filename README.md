@@ -4,9 +4,16 @@ Sistema de Gestão de Doações para a ONG Mesa para Todos, de Recife–PE.
 
 Projeto desenvolvido na disciplina Projeto Integrador Extensionista II, do curso de Análise e Desenvolvimento de Sistemas.
 
-## Atividade 1
+## Funcionalidades atuais
 
-Esta etapa cria a estrutura inicial do sistema: uma página que consulta a API e exibe seu status, com data e hora.
+- Cadastro, listagem, edição e exclusão de doadores.
+- Registro de doações com atualização automática do estoque.
+- Listagem das doações com doador, item, quantidade, data e observação.
+- Consulta ao status da API e da conexão com o banco de dados.
+
+Cada doação registra um tipo de item: cesta de alimentos ou kit de higiene, com sua quantidade.
+
+Doadores com doações registradas não podem ser excluídos, preservando o histórico.
 
 ## Tecnologias
 
@@ -15,58 +22,118 @@ Esta etapa cria a estrutura inicial do sistema: uma página que consulta a API e
 - Node.js
 - Express
 - dotenv
+- MySQL 8.4
+- mysql2
 - Git e GitHub
 
 ## Requisitos
 
-- Git instalado
-- Vite+ instalado, com o comando `vp` disponível
+- Git instalado.
+- Vite+ instalado, com o comando `vp` disponível.
+- MySQL 8.4 instalado.
+- Cliente MySQL disponível para executar os arquivos SQL.
 
-Instalação do Vite+: https://viteplus.dev/guide
+Guia de instalação do Vite+: https://viteplus.dev/guide
 
 ## Como executar
 
-Abra o Terminal na pasta do projeto.
+Execute os comandos no Terminal, dentro da pasta do projeto.
 
-1. Instale as dependências:
+### 1. Instalar as dependências
 
-   ```bash
-   vp install
-   ```
+```bash
+vp install
+```
 
-2. Na primeira execução, crie o arquivo de configuração local:
+### 2. Configurar o ambiente local
 
-   ```bash
-   cp .env.example .env
-   ```
+Na primeira execução, copie o arquivo de exemplo:
 
-   O arquivo deve conter `PORT=3000`.
+```bash
+cp .env.example .env
+```
 
-3. Inicie a API:
+Ajuste o `.env` conforme a instalação local do MySQL:
 
-   ```bash
-   vp run api
-   ```
+```dotenv
+PORT=3000
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=mesa_para_todos
+```
 
-4. Abra outro Terminal na mesma pasta e inicie a página:
+`DB_PASSWORD` deve conter a senha do usuário informado em `DB_USER`. No ambiente local utilizado no projeto, a senha está vazia.
 
-   ```bash
-   vp dev
-   ```
+### 3. Iniciar o MySQL
 
-5. Acesse http://localhost:5173/
+No macOS com MySQL 8.4 instalado pelo Homebrew:
 
-A página deverá mostrar “Status da API: ok”, seguido de data e hora.
+```bash
+brew services run mysql@8.4
+```
 
-Mantenha os dois terminais funcionando durante o uso.
+Em outras instalações, inicie o serviço MySQL pela ferramenta correspondente.
 
-## Rota da API
+### 4. Preparar o banco na primeira execução
 
-`GET /api/health`
+O arquivo `database/schema.sql` recria o banco e apaga os dados anteriores. Execute-o somente na preparação inicial ou quando desejar reiniciar o banco de testes.
 
-Disponível diretamente em http://localhost:3000/api/health enquanto a API estiver funcionando.
+Com o cliente `mysql` disponível no Terminal:
 
-A resposta contém `status`, `app` e `hora`.
+```bash
+mysql -u root -p < database/schema.sql
+mysql -u root -p < database/seed.sql
+```
+
+Informe a senha do MySQL quando solicitado. Se estiver vazia, pressione Enter.
+
+No macOS Apple Silicon com Homebrew, caso `mysql` não seja encontrado, substitua esse comando por `/opt/homebrew/opt/mysql@8.4/bin/mysql`.
+
+O `seed.sql` cadastra os tipos cesta de alimentos e kit de higiene, sem alterar quantidades já existentes.
+
+### 5. Iniciar a API
+
+```bash
+vp run api
+```
+
+### 6. Iniciar a página
+
+Em outra aba do Terminal, na mesma pasta:
+
+```bash
+vp dev
+```
+
+Acesse http://localhost:5173/ e utilize o menu Doadores, Registrar doação e Doações.
+
+O rodapé deverá mostrar `API: ok, banco: ok`, com data e hora.
+
+Mantenha o MySQL e os dois servidores funcionando durante o uso.
+
+## Rotas da API
+
+A API funciona em http://localhost:3000 durante o desenvolvimento.
+
+| Método | Rota                | Finalidade                                 |
+| ------ | ------------------- | ------------------------------------------ |
+| GET    | `/api/health`       | Consultar o status da API e do banco       |
+| GET    | `/api/doadores`     | Listar doadores                            |
+| GET    | `/api/doadores/:id` | Consultar um doador                        |
+| POST   | `/api/doadores`     | Cadastrar um doador                        |
+| PUT    | `/api/doadores/:id` | Atualizar um doador                        |
+| DELETE | `/api/doadores/:id` | Excluir um doador sem doações vinculadas   |
+| GET    | `/api/itens`        | Listar os tipos de item disponíveis        |
+| GET    | `/api/doacoes`      | Listar doações                             |
+| POST   | `/api/doacoes`      | Registrar uma doação e atualizar o estoque |
+
+Nas rotas de doadores, substitua `:id` pelo identificador do cadastro.
+
+A rota `/api/health` retorna os campos `status`, `banco`, `app` e `hora`.
+
+Durante o desenvolvimento, a página utiliza o proxy `/api` configurado no Vite+ para acessar o servidor Express.
 
 ## Verificações
 
