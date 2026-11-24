@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import db from "./db.js";
+import doadores from "./routes/doadores.js";
 
 const app = express();
 app.use(express.json());
@@ -20,6 +21,21 @@ app.get("/api/health", async (req, res) => {
     banco,
     app: "Mesa para Todos",
     hora: new Date().toISOString(),
+  });
+});
+
+app.use("/api/doadores", doadores);
+
+app.use((erro, req, res, _next) => {
+  if (erro.type === "entity.parse.failed") {
+    return res.status(400).json({
+      erro: "JSON inválido no corpo da requisição",
+    });
+  }
+
+  console.error(erro);
+  res.status(500).json({
+    erro: "Erro interno no servidor",
   });
 });
 
