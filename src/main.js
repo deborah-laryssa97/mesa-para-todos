@@ -1,12 +1,15 @@
 import "./style.css";
 import { verificarSaude } from "./api.js";
 import { telaDoadores } from "./pages/doadores.js";
+import { telaNovaDoacao, telaDoacoes } from "./pages/doacoes.js";
 
 const app = document.querySelector("#app");
 const statusApi = document.querySelector("#status-api");
 
 const rotas = {
   "#/doadores": telaDoadores,
+  "#/doacoes/nova": telaNovaDoacao,
+  "#/doacoes": telaDoacoes,
 };
 
 async function navegar() {
