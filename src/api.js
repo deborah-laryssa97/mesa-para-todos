@@ -1,5 +1,29 @@
+const CHAVE_TOKEN = "mesa_para_todos_token";
+const CHAVE_NOME = "mesa_para_todos_usuario";
+
+export function lerToken() {
+  return localStorage.getItem(CHAVE_TOKEN);
+}
+
+export function lerNomeUsuario() {
+  return localStorage.getItem(CHAVE_NOME) ?? "";
+}
+
+export function sair() {
+  localStorage.removeItem(CHAVE_TOKEN);
+  localStorage.removeItem(CHAVE_NOME);
+}
+
 async function requisicao(caminho, opcoes = {}) {
   let resposta;
+  const token = lerToken();
+
+  if (token) {
+    opcoes.headers = {
+      ...opcoes.headers,
+      Authorization: `Bearer ${token}`,
+    };
+  }
 
   try {
     resposta = await fetch(`/api${caminho}`, {
@@ -60,3 +84,15 @@ export const registrarDoacao = (doacao) =>
   });
 
 export const verificarSaude = () => requisicao("/health");
+
+export async function entrar(email, senha) {
+  const dados = await requisicao("/auth/login", {
+    method: "POST",
+    body: JSON.stringify({ email, senha }),
+  });
+
+  localStorage.setItem(CHAVE_TOKEN, dados.token);
+  localStorage.setItem(CHAVE_NOME, dados.usuario.nome);
+
+  return dados.usuario;
+}

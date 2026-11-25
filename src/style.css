@@ -199,3 +199,34 @@ button:disabled {
     align-items: start;
   }
 }
+.login {
+  width: 100%;
+  max-width: 420px;
+  margin: 40px auto;
+}
+
+.login h1 {
+  text-align: center;
+}
+
+.login button {
+  width: 100%;
+}
+
+.sessao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.topo {
+  flex-wrap: wrap;
+}
+
+@media (min-width: 900px) {
+  .sessao {
+    margin-top: 0;
+  }
+}
