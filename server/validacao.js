@@ -72,3 +72,18 @@ export function validarDoacao(dados = {}) {
 
   return null;
 }
+export function validarLogin(dados = {}) {
+  const email = dados.email;
+  const senha = dados.senha;
+
+  if (
+    typeof email !== "string" ||
+    email.trim() === "" ||
+    typeof senha !== "string" ||
+    senha === ""
+  ) {
+    return "Informe e-mail e senha";
+  }
+
+  return null;
+}

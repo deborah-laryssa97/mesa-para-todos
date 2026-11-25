@@ -1,9 +1,15 @@
 import "dotenv/config";
 import express from "express";
 import db from "./db.js";
+import auth, { autenticar } from "./auth.js";
 import doadores from "./routes/doadores.js";
 import itens from "./routes/itens.js";
 import doacoes from "./routes/doacoes.js";
+
+if (!process.env.JWT_SECRET) {
+  console.error("Defina JWT_SECRET no arquivo .env");
+  process.exit(1);
+}
 
 const app = express();
 app.use(express.json());
@@ -25,6 +31,10 @@ app.get("/api/health", async (req, res) => {
     hora: new Date().toISOString(),
   });
 });
+
+app.use("/api/auth", auth);
+
+app.use("/api", autenticar);
 
 app.use("/api/doadores", doadores);
 app.use("/api/itens", itens);
