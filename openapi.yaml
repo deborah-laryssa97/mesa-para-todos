@@ -1,0 +1,223 @@
+openapi: 3.0.3
+
+info:
+  title: Mesa para Todos API
+  description: API do sistema de gestao de doacoes do PIE II
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000/api
+    description: Desenvolvimento local
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    NaoAutorizado:
+      description: Token ausente, invalido ou expirado
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Erro"
+
+  schemas:
+    Erro:
+      type: object
+      required: [erro]
+      properties:
+        erro: { type: string }
+
+    Login:
+      type: object
+      required: [email, senha]
+      properties:
+        email: { type: string, minLength: 1 }
+        senha:
+          type: string
+          format: password
+          minLength: 1
+          writeOnly: true
+
+    Token:
+      type: object
+      required: [token, usuario]
+      properties:
+        token: { type: string }
+        usuario:
+          type: object
+          required: [nome, email]
+          properties:
+            nome: { type: string }
+            email: { type: string }
+
+    DoadorInput:
+      type: object
+      required: [nome]
+      properties:
+        nome: { type: string, minLength: 1, maxLength: 150 }
+        email:
+          type: string
+          nullable: true
+          maxLength: 100
+          description: E-mail valido, vazio ou null
+        telefone: { type: string, nullable: true, maxLength: 20 }
+
+    Doador:
+      type: object
+      properties:
+        id_doador: { type: integer, readOnly: true }
+        nome: { type: string }
+        email: { type: string, nullable: true }
+        telefone: { type: string, nullable: true }
+        data_cadastro: { type: string, format: date }
+
+    DoacaoInput:
+      type: object
+      required: [id_doador, tipo, quantidade, data_doacao]
+      properties:
+        id_doador: { type: integer, minimum: 1 }
+        tipo:
+          type: string
+          enum: [cesta_alimentos, kit_higiene]
+        quantidade: { type: integer, minimum: 1, maximum: 2147483647 }
+        data_doacao: { type: string, format: date }
+        observacao: { type: string, nullable: true, maxLength: 255 }
+
+paths:
+  /health:
+    get:
+      summary: Consulta o estado da API e do banco
+      security: []
+      responses:
+        "200": { description: Estado da API e do banco }
+
+  /auth/login:
+    post:
+      summary: Confere credenciais e emite um token JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Login"
+      responses:
+        "200":
+          description: Login aceito
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Token"
+        "400": { description: E-mail ou senha nao informados corretamente }
+        "401": { description: E-mail ou senha invalidos }
+
+  /doadores:
+    get:
+      summary: Lista doadores
+      responses:
+        "200":
+          description: Lista de doadores
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Doador"
+        "401":
+          $ref: "#/components/responses/NaoAutorizado"
+    post:
+      summary: Cadastra um doador
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DoadorInput"
+      responses:
+        "201": { description: Doador cadastrado }
+        "400": { description: Dados invalidos }
+        "401":
+          $ref: "#/components/responses/NaoAutorizado"
+        "409": { description: E-mail ja cadastrado }
+  /doadores/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer, minimum: 1 }
+
+    get:
+      summary: Consulta um doador pelo identificador
+      responses:
+        "200":
+          description: Doador encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Doador"
+        "400": { description: ID invalido }
+        "401":
+          $ref: "#/components/responses/NaoAutorizado"
+        "404": { description: Doador nao encontrado }
+
+    put:
+      summary: Atualiza um doador
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DoadorInput"
+      responses:
+        "200": { description: Doador atualizado }
+        "400": { description: ID ou dados invalidos }
+        "401":
+          $ref: "#/components/responses/NaoAutorizado"
+        "404": { description: Doador nao encontrado }
+        "409": { description: E-mail ja cadastrado }
+
+    delete:
+      summary: Exclui um doador sem doacoes vinculadas
+      responses:
+        "204": { description: Doador excluido sem corpo na resposta }
+        "400": { description: ID invalido }
+        "401":
+          $ref: "#/components/responses/NaoAutorizado"
+        "404": { description: Doador nao encontrado }
+        "409": { description: Doador possui doacoes registradas }
+  /itens:
+    get:
+      summary: Lista os tipos de item disponiveis
+      responses:
+        "200": { description: Lista com os campos tipo e nome }
+        "401":
+          $ref: "#/components/responses/NaoAutorizado"
+
+  /doacoes:
+    get:
+      summary: Lista doacoes com o nome do doador e do item
+      responses:
+        "200": { description: Lista de doacoes }
+        "401":
+          $ref: "#/components/responses/NaoAutorizado"
+
+    post:
+      summary: Registra uma doacao e atualiza o estoque
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DoacaoInput"
+      responses:
+        "201": { description: Doacao registrada }
+        "400": { description: "Dados invalidos, doador ou tipo inexistente" }
+        "401":
+          $ref: "#/components/responses/NaoAutorizado"

@@ -1,0 +1,66 @@
+@baseUrl = http://localhost:3000
+
+### 1. Saude da API - esperado: 200 OK
+GET {{baseUrl}}/api/health
+
+### 2. Cadastro sem token - esperado: 401 Token ausente
+POST {{baseUrl}}/api/doadores
+Content-Type: application/json
+
+{
+  "nome": "Teste sem token"
+}
+
+### 3. Senha errada - esperado: 401 E-mail ou senha invalidos
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "voluntario@example.com",
+  "senha": "errada"
+}
+
+### 4. E-mail inexistente - esperado: 401 E-mail ou senha invalidos
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "naoexiste@example.com",
+  "senha": "mesaparatodos123"
+}
+
+### 5. Login sem senha - esperado: 400 Informe e-mail e senha
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "voluntario@example.com"
+}
+### 6. Login correto - esperado: 200 com token e usuario
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "voluntario@example.com",
+  "senha": "mesaparatodos123"
+}
+
+### 7. Listagem com token - esperado: 200 OK
+GET {{baseUrl}}/api/doadores
+Authorization: Bearer {{login.response.body.token}}
+
+### 8. Cadastro com token - esperado: 201 no primeiro cadastro
+# Se o e-mail ja estiver cadastrado, o esperado sera 409.
+POST {{baseUrl}}/api/doadores
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{
+  "nome": "Doador ficticio do teste HTTP",
+  "email": "autenticado.http@example.com"
+}
+
+### 9. Token adulterado - esperado: 401 Token invalido ou expirado
+GET {{baseUrl}}/api/doadores
+Authorization: Bearer {{login.response.body.token}}x

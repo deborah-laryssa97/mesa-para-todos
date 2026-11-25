@@ -188,6 +188,14 @@ Durante o desenvolvimento, a página utiliza o proxy `/api` configurado no Vite+
 
 ## Verificações
 
+O contrato das rotas está em `openapi.yaml`, com a descrição dos pedidos, das respostas e da proteção com JWT.
+
+O arquivo `api.http` reúne nove testes de autenticação com os resultados esperados. Os testes funcionais desta etapa foram realizados pelo Terminal com curl.
+
+Para executar os pedidos do arquivo `api.http`, utilize um cliente HTTP compatível. Execute primeiro o login do teste 6 para disponibilizar o token usado nos testes 7 a 9.
+
+O teste 8 cadastra um doador fictício. Se o e-mail já estiver cadastrado, a API responde com erro 409.
+
 Verificar o código e a formatação:
 
 ```bash
